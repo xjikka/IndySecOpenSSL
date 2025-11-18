@@ -553,13 +553,16 @@ const
 
 implementation
 
-uses SyncObjs,  Sysutils
+uses  Sysutils
    {$IFNDEF FPC}
+     ,System.SyncObjs
      {$IFDEF POSIX}
        ,Posix.Pthread
      {$ELSE}
        ,Windows
      {$ENDIF}
+   {$ELSE}
+     ,SyncObjs
    {$ENDIF},
 Classes,
      IdSecOpenSSLExceptionHandlers,

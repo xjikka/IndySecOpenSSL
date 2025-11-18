@@ -1896,8 +1896,8 @@ function SSL_SESSION_get0_ticket_appdata(ss: PSSL_SESSION; data: PPointer; len: 
 procedure DTLS_set_timer_cb(s: PSSL; cb: DTLS_timer_cb); cdecl; external CLibSSL;
 procedure SSL_CTX_set_allow_early_data_cb(ctx: PSSL_CTX; cb: SSL_allow_early_data_cb_fN; arg: Pointer); cdecl; external CLibSSL;
 procedure SSL_set_allow_early_data_cb(s: PSSL; cb: SSL_allow_early_data_cb_fN; arg: Pointer); cdecl; external CLibSSL;
-function SSL_get0_peer_certificate(const s: PSSL): PX509; cdecl; {introduced 3.3.0 } external CLibSSL;
-function SSL_get1_peer_certificate(const s: PSSL): PX509; cdecl; {introduced 3.3.0 } external CLibSSL;
+function SSL_get0_peer_certificate(const s: PSSL): PX509; cdecl; external CLibSSL;
+function SSL_get1_peer_certificate(const s: PSSL): PX509; cdecl; external CLibSSL;
 
 
 
@@ -2839,8 +2839,8 @@ var
   DTLS_set_timer_cb: procedure (s: PSSL; cb: DTLS_timer_cb); cdecl = Load_DTLS_set_timer_cb;
   SSL_CTX_set_allow_early_data_cb: procedure (ctx: PSSL_CTX; cb: SSL_allow_early_data_cb_fN; arg: Pointer); cdecl = Load_SSL_CTX_set_allow_early_data_cb;
   SSL_set_allow_early_data_cb: procedure (s: PSSL; cb: SSL_allow_early_data_cb_fN; arg: Pointer); cdecl = Load_SSL_set_allow_early_data_cb;
-  SSL_get0_peer_certificate: function (const s: PSSL): PX509; cdecl = Load_SSL_get0_peer_certificate; {introduced 3.3.0 }
-  SSL_get1_peer_certificate: function (const s: PSSL): PX509; cdecl = Load_SSL_get1_peer_certificate; {introduced 3.3.0 }
+  SSL_get0_peer_certificate: function (const s: PSSL): PX509; cdecl = Load_SSL_get0_peer_certificate;
+  SSL_get1_peer_certificate: function (const s: PSSL): PX509; cdecl = Load_SSL_get1_peer_certificate;
 
 
 
@@ -3183,8 +3183,8 @@ const
   TLSv1_2_method_removed = ((((((byte(1) shl 8) or byte(1)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {removed 1.1.0}
   TLSv1_2_server_method_removed = ((((((byte(1) shl 8) or byte(1)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {removed 1.1.0}
   TLSv1_2_client_method_removed = ((((((byte(1) shl 8) or byte(1)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {removed 1.1.0}
-  SSL_get0_peer_certificate_introduced = ((((((byte(3) shl 8) or byte(3)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {introduced 3.3.0}
-  SSL_get1_peer_certificate_introduced = ((((((byte(3) shl 8) or byte(3)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {introduced 3.3.0}
+  SSL_get0_peer_certificate_introduced = ((((((byte(3) shl 8) or byte(0)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {introduced 3.0.0}
+  SSL_get1_peer_certificate_introduced = ((((((byte(3) shl 8) or byte(0)) shl 8) or byte(0)) shl 8) or byte(0)) shl 4; {introduced 3.0.0}
 
 
 implementation

@@ -1080,7 +1080,6 @@ function COMPAT_OPENSSL_init_crypto(opts: TOpenSSL_C_UINT64; const settings: POP
 var OpenSSL_add_all_ciphers: procedure; cdecl;
     OpenSSL_add_all_digests: procedure; cdecl;
 begin
-  Result := 0;
   if opts and OPENSSL_INIT_ADD_ALL_CIPHERS <> 0 then
   begin
     OpenSSL_add_all_ciphers := LoadLibCryptoFunction('OpenSSL_add_all_ciphers');

@@ -301,6 +301,7 @@ type
   TPasswordEventEx = procedure( ASender : TObject; var VPassword: String; const AIsWrite : Boolean) of object;
   TVerifyPeerEvent  = function(Certificate: TIdX509; AOk: Boolean; ADepth, AError: Integer): Boolean of object;
   TIOHandlerNotify = procedure(ASender: TIdSecIOHandlerSocketOpenSSL) of object;
+  TIdSecContextLoaderEvent = procedure (ASender:TObject; AContext:TIdSecContext) of object;
 
   { TIdSecIOHandlerSocketOpenSSL }
 
@@ -320,6 +321,7 @@ type
     // function GetPeerCert: TIdX509;
     //procedure CreateSSLContext(axMode: TIdSecMode);
     //
+    fOnContextLoaderCustom:TIdSecContextLoaderEvent;
     procedure SetPassThrough(const Value: Boolean); override;
     procedure DoBeforeConnect(ASender: TIdSecIOHandlerSocketOpenSSL); virtual;
     procedure DoGetPassword(var Password: String); virtual;
@@ -365,6 +367,8 @@ type
     property OnGetPassword: TPasswordEvent read fOnGetPassword write fOnGetPassword;
     property OnGetPasswordEx : TPasswordEventEx read fOnGetPasswordEx write fOnGetPasswordEx;
     property OnVerifyPeer: TVerifyPeerEvent read fOnVerifyPeer write fOnVerifyPeer;
+    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
+    property OnContextLoaderCustom:TIdSecContextLoaderEvent read fOnContextLoaderCustom write fOnContextLoaderCustom;
   end;
 
   { TIdSecServerIOHandlerSSLOpenSSL }
@@ -383,6 +387,7 @@ type
     //procedure CreateSSLContext(axMode: TIdSecMode);
     //procedure CreateSSLContext;
     //
+    fOnContextLoaderCustom:TIdSecContextLoaderEvent;
     procedure DoStatusInfo(const AMsg: String); virtual;
     procedure DoStatusInfoEx(const aSSLSocket: TIdSecSocket;
       const AWhere, Aret: TIdC_INT; const AWhereStr, ARetStr : String );
@@ -422,6 +427,8 @@ type
     property OnGetPassword: TPasswordEvent read fOnGetPassword write fOnGetPassword;
     property OnGetPasswordEx : TPasswordEventEx read fOnGetPasswordEx write fOnGetPasswordEx;
     property OnVerifyPeer: TVerifyPeerEvent read fOnVerifyPeer write fOnVerifyPeer;
+    //20260116 xjikka: OnContextLoaderCustom Allows custom context loading (e.g. from TBytes/TStream)
+    property OnContextLoaderCustom:TIdSecContextLoaderEvent read fOnContextLoaderCustom write fOnContextLoaderCustom;
   end;
 
   EIdOSSLCouldNotLoadSSLLibrary = class(EOpenSSLError);
@@ -555,6 +562,9 @@ begin
   Assert(fSSLContext = nil);
   fSSLContext := TIdSecContext.Create(self,SSLOptions,sslCtxServer,Assigned(OnVerifyPeer),
                            Assigned(fOnStatusInfo) or Assigned(FOnStatusInfoEx));
+  if assigned(OnContextLoaderCustom) then begin
+    OnContextLoaderCustom(self,fSSLContext);
+  end;
 end;
 
 function TIdSecServerIOHandlerSSLOpenSSL.Accept(ASocket: TIdSocketHandle;
@@ -937,6 +947,9 @@ begin
   if not Assigned(fSSLContext) then
     fSSLContext := TIdSecContext.Create(self,SSLOptions,sslCtxClient,Assigned(OnVerifyPeer),
                            Assigned(fOnStatusInfo) or Assigned(FOnStatusInfoEx));
+  if assigned(OnContextLoaderCustom) then begin
+    OnContextLoaderCustom(self,fSSLContext);
+  end;
 end;
 //}
 

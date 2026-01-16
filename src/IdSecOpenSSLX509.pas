@@ -178,12 +178,14 @@ http://csrc.nist.gov/CryptoToolkit/tkhash.html
   end;
 
 function IndySSL_load_client_CA_file(const AFileName: String) : PSTACK_OF_X509_NAME;
+function IndySSL_load_client_CA_stream(const AStream:TStream): PSTACK_OF_X509_NAME;
 function IndySSL_CTX_load_verify_locations(ctx: PSSL_CTX; const ACAFile, ACAPath: String): TIdC_INT;
 function IndySSL_CTX_use_certificate_file(ctx: PSSL_CTX; const AFileName: String; AType: Integer): TIdC_INT;
 function IndySSL_CTX_use_certificate_file_PKCS12(ctx: PSSL_CTX; const AFileName: String): TIdC_INT;
 function IndySSL_CTX_use_certificate_chain_file(ctx :PSSL_CTX; const AFileName: String) : TIdC_INT;
 function IndySSL_CTX_use_PrivateKey_file_PKCS12(ctx: PSSL_CTX; const AFileName: String): TIdC_INT;
 function IndySSL_CTX_use_PrivateKey_file(ctx: PSSL_CTX; const AFileName: String; AType: Integer): TIdC_INT;
+function IndySSL_CTX_use_PrivateKey_stream(ctx: PSSL_CTX; AStream: TStream; AType: Integer): TIdC_INT;
 function IndySSL_CTX_use_DHparams_file(ctx: PSSL_CTX; const AFileName: String; AType: Integer): TIdC_INT;
 function IndyX509_STORE_load_locations(ctx: PX509_STORE; const AFileName, APathName: String): TIdC_INT;
 
@@ -1002,7 +1004,8 @@ begin
   Result := X509_NAME_cmp(a^, b^);
 end;
 
-function IndySSL_load_client_CA_file(const AFileName: String): PSTACK_OF_X509_NAME;
+//internal_IndySSL_load_client_CA_stream_or_file AStream has priority
+function internal_IndySSL_load_client_CA_stream_or_file(AStream:TStream; const AFileName: String): PSTACK_OF_X509_NAME;
 var
   LM: TMemoryStream;
   LB: PBIO;
@@ -1020,7 +1023,10 @@ begin
       LM := nil;
       try
         LM := TMemoryStream.Create;
-        LM.LoadFromFile(AFileName);
+        if AStream<>nil then
+          LM.LoadFromStream(AStream)
+        else
+          LM.LoadFromFile(AFileName);
       except
         // Surpress exception here since it's going to be called by the OpenSSL .DLL
         // Follow the OpenSSL .DLL Error conventions.
@@ -1101,8 +1107,19 @@ begin
   end;
 end;
 
-function IndySSL_CTX_use_PrivateKey_file(ctx: PSSL_CTX; const AFileName: String;
-  AType: Integer): TIdC_INT;
+function IndySSL_load_client_CA_file(const AFileName: String): PSTACK_OF_X509_NAME;
+begin
+  result:=internal_IndySSL_load_client_CA_stream_or_file(nil, AFileName);
+end;
+
+function IndySSL_load_client_CA_stream(const AStream:TStream): PSTACK_OF_X509_NAME;
+begin
+  result:=internal_IndySSL_load_client_CA_stream_or_file(AStream, '');
+end;
+
+//internal_IndySSL_CTX_use_PrivateKey_stream_or_file AStream has priority
+function internal_IndySSL_CTX_use_PrivateKey_stream_or_file(ctx: PSSL_CTX;
+  AStream: TStream;  const AFileName: String; AType: Integer): TIdC_INT;
 var
   LM: TMemoryStream;
   B: PBIO;
@@ -1114,7 +1131,10 @@ begin
   LM := nil;
   try
     LM := TMemoryStream.Create;
-    LM.LoadFromFile(AFileName);
+    if AStream<>nil then
+      LM.LoadFromStream(AStream)
+    else
+      LM.LoadFromFile(AFileName);
   except
     // Surpress exception here since it's going to be called by the OpenSSL .DLL
     // Follow the OpenSSL .DLL Error conventions.
@@ -1159,6 +1179,18 @@ begin
   finally
     FreeAndNil(LM);
   end;
+end;
+
+function IndySSL_CTX_use_PrivateKey_file(ctx: PSSL_CTX; const AFileName: String;
+  AType: Integer): TIdC_INT;
+begin
+  result:=internal_IndySSL_CTX_use_PrivateKey_stream_or_file(ctx, nil, AFileName, AType);
+end;
+
+function IndySSL_CTX_use_PrivateKey_stream(ctx: PSSL_CTX; AStream: TStream;
+  AType: Integer): TIdC_INT;
+begin
+  result:=internal_IndySSL_CTX_use_PrivateKey_stream_or_file(ctx, AStream, '', AType);
 end;
 
 function IndySSL_CTX_use_certificate_file(ctx: PSSL_CTX;
